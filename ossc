@@ -1,0 +1,68 @@
+#!/bin/bash
+
+# Function to check if a number is a palindrome
+is_palindrome() {
+    num=$1
+    rev_num=$(echo $num | rev)
+    if [ "$num" == "$rev_num" ]; then
+        echo "$num is a palindrome."
+    else
+        echo "$num is not a palindrome."
+    fi
+}
+
+# Optimized function to check if a number is prime
+is_prime() {
+    num=$1
+    if [ $num -le 1 ]; then
+        echo "$num is not a prime number."
+        return
+    fi
+    for ((i=2; i*i<=num; i++)); do
+        if [ $((num % i)) -eq 0 ]; then
+            echo "$num is not a prime number."
+            return
+        fi
+    done
+    echo "$num is a prime number."
+}
+
+# Function to generate Fibonacci series up to n terms
+generate_fibonacci() {
+    n=$1
+    a=0
+    b=1
+    echo "Fibonacci series up to $n terms:"
+    for ((i=0; i<n; i++)); do
+        echo -n "$a "
+        fn=$((a + b))
+        a=$b
+        b=$fn
+    done
+    echo
+}
+
+# Main script
+echo "Enter a number:"
+read number
+
+echo "Choose an option:"
+echo "1. Check if palindrome"
+echo "2. Check if prime"
+echo "3. Generate Fibonacci series"
+read choice
+
+case $choice in
+    1)
+        is_palindrome $number
+        ;;
+    2)
+        is_prime $number
+        ;;
+    3)
+        generate_fibonacci $number
+        ;;
+    *)
+        echo "Invalid choice."
+        ;;
+esac
