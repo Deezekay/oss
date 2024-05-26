@@ -1,68 +1,176 @@
-#!/bin/bash
+Write a Program to create a Binary Tree and perform following non-recursive operations on it. a. Preorder Traversal b. Count Leaf Nodes c. Count total no. of nodes d. Display height of a tree.
+#include <stdio.h>
+#include <stdlib.h>
 
-# Function to check if a number is a palindrome
-is_palindrome() {
-    num=$1
-    rev_num=$(echo $num | rev)
-    if [ "$num" == "$rev_num" ]; then
-        echo "$num is a palindrome."
-    else
-        echo "$num is not a palindrome."
-    fi
+// Structure for a node of the binary tree
+struct Node {
+    int data;
+    struct Node* left;
+    struct Node* right;
+};
+
+// Structure for stack
+struct Stack {
+    int top;
+    unsigned capacity;
+    struct Node** array;
+};
+
+// Function to create a new stack
+struct Stack* createStack(unsigned capacity) {
+    struct Stack* stack = (struct Stack*)malloc(sizeof(struct Stack));
+    stack->capacity = capacity;
+    stack->top = -1;
+    stack->array = (struct Node**)malloc(stack->capacity * sizeof(struct Node*));
+    return stack;
 }
 
-# Optimized function to check if a number is prime
-is_prime() {
-    num=$1
-    if [ $num -le 1 ]; then
-        echo "$num is not a prime number."
-        return
-    fi
-    for ((i=2; i*i<=num; i++)); do
-        if [ $((num % i)) -eq 0 ]; then
-            echo "$num is not a prime number."
-            return
-        fi
-    done
-    echo "$num is a prime number."
+// Function to check if stack is empty
+int isEmpty(struct Stack* stack) {
+    return stack->top == -1;
 }
 
-# Function to generate Fibonacci series up to n terms
-generate_fibonacci() {
-    n=$1
-    a=0
-    b=1
-    echo "Fibonacci series up to $n terms:"
-    for ((i=0; i<n; i++)); do
-        echo -n "$a "
-        fn=$((a + b))
-        a=$b
-        b=$fn
-    done
-    echo
+// Function to push node onto stack
+void push(struct Stack* stack, struct Node* item) {
+    if (stack->top == stack->capacity - 1) return;
+    stack->array[++stack->top] = item;
 }
 
-# Main script
-echo "Enter a number:"
-read number
+// Function to pop node from stack
+struct Node* pop(struct Stack* stack) {
+    if (isEmpty(stack)) return NULL;
+    return stack->array[stack->top--];
+}
 
-echo "Choose an option:"
-echo "1. Check if palindrome"
-echo "2. Check if prime"
-echo "3. Generate Fibonacci series"
-read choice
+// Function to create a new node
+struct Node* newNode(int data) {
+    struct Node* node = (struct Node*)malloc(sizeof(struct Node));
+    node->data = data;
+    node->left = NULL;
+    node->right = NULL;
+    return node;
+}
 
-case $choice in
-    1)
-        is_palindrome $number
-        ;;
-    2)
-        is_prime $number
-        ;;
-    3)
-        generate_fibonacci $number
-        ;;
-    *)
-        echo "Invalid choice."
-        ;;
-esac
+// Function to perform preorder traversal non-recursively
+void preorderTraversal(struct Node* root) {
+    if (root == NULL) return;
+
+    struct Stack* stack = createStack(100);
+    push(stack, root);
+
+    while (!isEmpty(stack)) {
+        struct Node* node = pop(stack);
+        printf("%d ", node->data);
+
+        if (node->right) push(stack, node->right);
+        if (node->left) push(stack, node->left);
+    }
+}
+
+// Function to perform postorder traversal non-recursively
+void postorderTraversal(struct Node* root) {
+    if (root == NULL) return;
+
+    struct Stack* stack1 = createStack(100);
+    struct Stack* stack2 = createStack(100);
+    push(stack1, root);
+
+    while (!isEmpty(stack1)) {
+        struct Node* node = pop(stack1);
+        push(stack2, node);
+
+        if (node->left) push(stack1, node->left);
+        if (node->right) push(stack1, node->right);
+    }
+
+    while (!isEmpty(stack2)) {
+        struct Node* node = pop(stack2);
+        printf("%d ", node->data);
+    }
+}
+
+// Function to count total number of nodes
+int countNodes(struct Node* root) {
+    if (root == NULL) return 0;
+
+    int count = 1;
+    struct Stack* stack = createStack(100);
+    push(stack, root);
+
+    while (!isEmpty(stack)) {
+        struct Node* node = pop(stack);
+
+        if (node->right) {
+            count++;
+            push(stack, node->right);
+        }
+
+        if (node->left) {
+            count++;
+            push(stack, node->left);
+        }
+    }
+
+    return count;
+}
+
+// Function to calculate the height of a tree
+int height(struct Node* root) {
+    if (root == NULL) return 0;
+
+    int height = 0;
+    struct Stack* stack = createStack(100);
+    struct Node* prev = NULL;
+
+    while (root || !isEmpty(stack)) {
+        if (root) {
+            push(stack, root);
+            root = root->left;
+        } else {
+            struct Node* node = stack->array[stack->top];
+            if (node->right && node->right != prev) {
+                root = node->right;
+            } else {
+                if (stack->top + 1 > height) {
+                    height = stack->top + 1;
+                }
+                prev = stack->array[stack->top];
+                pop(stack);
+            }
+        }
+    }
+
+    return height;
+}
+
+// Main function
+int main() {
+    int i = 7;
+    int a[i];
+    printf("Enter 7 integers: ");
+    for (int i = 0; i < 7; i++)
+        scanf("%d", &a[i]);
+    printf("\nYour tree looks like:\n       %d      \n     %d   %d      \n   %d  %d   %d  %d", a[0], a[1], a[2], a[3], a[4], a[5], a[6]);
+
+    struct Node* root = newNode(a[0]);
+    root->left = newNode(a[1]);
+    root->right = newNode(a[2]);
+    root->left->left = newNode(a[3]);
+    root->left->right = newNode(a[4]);
+    root->right->left = newNode(a[5]);
+    root->right->right = newNode(a[6]);
+
+    printf("\n\nPreorder traversal: ");
+    preorderTraversal(root);
+    printf("\n");
+    printf("Postorder traversal: ");
+    postorderTraversal(root);
+    printf("\n");
+    printf("Total number of nodes: %d\n", countNodes(root));
+    printf("Height of the tree: %d\n", height(root));
+
+    return 0;
+}
+**********************************************************************************************************************************************************************************************************
+
+
